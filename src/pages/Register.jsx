@@ -64,25 +64,34 @@ export default function Register() {
 
   const handleVerifyEmail = async (code) => {
     try {
-      // Simulate verification
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      // Demo-only verification. Replace this with authService.verifyEmail when a backend exists.
+      if (code !== '123456') {
+        throw new Error('Invalid verification code. For local demo, enter 123456.')
+      }
+      await new Promise(resolve => setTimeout(resolve, 300))
+
       const mockUser = {
         id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
         role: formData.role,
-        department: '',
+        department: formData.department.trim(),
         profileComplete: false,
-        profilePicture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`
+        profilePicture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formData.name.trim())}`
       }
 
+      const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+      if (users.some(user => user.email === mockUser.email)) {
+        throw new Error('An account with this email already exists. Please sign in.')
+      }
+      users.push({ ...mockUser, password: formData.password })
+      localStorage.setItem('registeredUsers', JSON.stringify(users))
       localStorage.setItem('currentUser', JSON.stringify(mockUser))
       setCurrentUser(mockUser)
       setIsAuthenticated(true)
       navigate('/dashboard')
     } catch (err) {
-      throw new Error('Verification failed')
+      throw err
     }
   }
 

@@ -83,10 +83,10 @@ cp .env.example .env.local
 ```
 
 4. **Update environment variables** (optional)
-Edit `.env.local` to configure API endpoints:
+Edit `.env.local` to configure API endpoints (Vite requires the `VITE_` prefix):
 ```
-REACT_APP_API_URL=http://localhost:3000/api
-REACT_APP_USE_MOCK_DATA=true
+VITE_API_URL=http://localhost:3000/api
+VITE_USE_MOCK_DATA=true
 ```
 
 ## 🚀 Running the Application
@@ -145,8 +145,9 @@ package.json          # Dependencies and scripts
 For development, the app uses mock authentication:
 - **Demo Email**: demo@university.edu
 - **Demo Password**: password123
+- **Registration demo OTP**: 123456 (no email is sent)
 
-Users are stored in `localStorage` as `currentUser` and `authToken`.
+Demo users are stored in browser `localStorage` (`currentUser` and `registeredUsers`). This is for local demonstration only; it is not secure production authentication.
 
 ### Production Integration
 To integrate with a backend API:
@@ -353,7 +354,7 @@ For issues, questions, or suggestions, please contact the development team or cr
 
 ## 🎯 Next Steps
 
-1. **Configure Backend**: Connect to your actual API by updating `REACT_APP_API_URL` in `.env`
+1. **Configure Backend**: Connect to your actual API by updating `VITE_API_URL` in `.env`
 2. **Add Authentication**: Implement backend authentication with JWT tokens
 3. **Database**: Set up database for persistent data storage
 4. **Testing**: Add unit and integration tests

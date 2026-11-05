@@ -39,22 +39,39 @@ export default function SignIn() {
         throw new Error('Password must be at least 6 characters')
       }
 
-      // Mock successful login - prefer stored registered user if available
-      const storedUser = safeReadStoredUser()
-      let mockUser
-      if (storedUser && storedUser.email === email) {
-        mockUser = storedUser
-      } else {
-        const nameFromEmail = email.split('@')[0].split(/[._-]/).map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')
-        mockUser = {
-          id: Date.now().toString(),
-          name: nameFromEmail || 'User',
-          email: email,
-          role: 'student',
-          department: 'Computer Science',
-          profilePicture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${nameFromEmail || 'User'}`
-        }
+      // Local demo authentication. Real authentication requires a configured backend.
+      const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+      const normalizedEmail = email.trim().toLowerCase()
+      const isAdminDemo = normalizedEmail === 'admin@university.edu' && password === 'admin123'
+      const isDemoAccount = normalizedEmail === 'demo@university.edu' && password === 'password123'
+      const registeredUser = users.find(user => user.email?.toLowerCase() === email.trim().toLowerCase())
+
+      if (!isDemoAccount && !isAdminDemo && !registeredUser) {
+        throw new Error('Account not found. Please create an account first.')
       }
+      if (!isDemoAccount && !isAdminDemo && registeredUser.password !== password) {
+        throw new Error('Incorrect email or password.')
+      }
+
+      const mockUser = isAdminDemo
+        ? {
+            id: 'demo-admin',
+            name: 'Portal Administrator',
+            email: 'admin@university.edu',
+            role: 'admin',
+            department: 'Administration',
+            profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PortalAdmin'
+          }
+        : isDemoAccount
+        ? {
+            id: 'demo-user',
+            name: 'Demo User',
+            email: 'demo@university.edu',
+            role: 'student',
+            department: 'Computer Science',
+            profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DemoUser'
+          }
+        : (({ password: _password, ...publicUser }) => publicUser)(registeredUser)
 
       localStorage.setItem('currentUser', JSON.stringify(mockUser))
       setCurrentUser(mockUser)
@@ -166,7 +183,7 @@ export default function SignIn() {
           {/* Info */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-xs text-blue-700 font-semibold mb-2">💡 Tip:</p>
-            <p className="text-xs text-blue-600">Enter any email address to sign in. Use any password with 6+ characters.</p>
+            <p className="text-xs text-blue-600">Student demo: demo@university.edu / password123. Admin demo: admin@university.edu / admin123.</p>
           </div>
         </div>
       </div>
