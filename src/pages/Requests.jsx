@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import { AuthContext } from '../App'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 
@@ -38,7 +39,20 @@ const initialRequests = [
 export default function Requests() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [filter, setFilter] = useState('all')
-  const [requests, setRequests] = useState(initialRequests)
+  const { currentUser } = useContext(AuthContext)
+  const storageKey = 'uni-reas-requests-' + (currentUser?.id || 'guest')
+  const [requests, setRequests] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      return saved ? JSON.parse(saved) : initialRequests
+    } catch {
+      return initialRequests
+    }
+  })
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(requests))
+  }, [requests, storageKey])
 
   const filteredRequests = useMemo(() => {
     if (filter === 'all') return requests
