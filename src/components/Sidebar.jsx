@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Users, Briefcase, Clock, Settings, LogOut, Bell } from 'lucide-react'
+import { LayoutDashboard, Users, Briefcase, Clock, Settings, LogOut, Bell, Shield } from 'lucide-react'
 import { AuthContext } from '../App'
 
 const menuItems = [
@@ -14,6 +14,9 @@ const menuItems = [
 export default function Sidebar({ isOpen, onLogout }) {
   const location = useLocation()
   const { currentUser } = useContext(AuthContext)
+  const visibleMenuItems = currentUser?.role === 'admin'
+    ? [...menuItems, { icon: Shield, label: 'Admin Panel', href: '/admin' }]
+    : menuItems
 
   return (
     <aside className={`fixed md:static top-0 left-0 h-screen bg-white border-r border-gray-200 transition-transform duration-300 z-40 ${
@@ -28,7 +31,7 @@ export default function Sidebar({ isOpen, onLogout }) {
 
         {/* Navigation */}
         <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon
             const isActive = location.pathname === item.href
             return (
