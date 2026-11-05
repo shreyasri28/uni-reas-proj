@@ -1,12 +1,19 @@
 import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, Bell, Search, LogOut, Settings, User } from 'lucide-react'
+import { Menu, X, Bell, Search, LogOut, Settings } from 'lucide-react'
 import { AuthContext } from '../App'
 
 export default function Header({ onMenuClick, sidebarOpen }) {
   const { currentUser, handleSignOut } = useContext(AuthContext)
   const navigate = useNavigate()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const handleSearch = (event) => {
+    event.preventDefault()
+    const query = searchTerm.trim()
+    navigate(query ? '/directory?q=' + encodeURIComponent(query) : '/directory')
+  }
 
   const handleLogout = () => {
     handleSignOut()
@@ -31,14 +38,10 @@ export default function Header({ onMenuClick, sidebarOpen }) {
 
         {/* Center - Search */}
         <div className="hidden md:flex flex-1 max-w-md">
-          <div className="relative w-full">
+          <form onSubmit={handleSearch} className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search people, projects..."
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-            />
-          </div>
+            <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search people or research areas..." aria-label="Search researchers and research areas" className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm" />
+          </form>
         </div>
 
         {/* Right Side - Actions */}

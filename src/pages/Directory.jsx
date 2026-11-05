@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { Search, Filter, MapPin, Briefcase } from 'lucide-react'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 export default function Directory() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchParams] = useSearchParams()
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '')
   const [departmentFilter, setDepartmentFilter] = useState('')
   const [researchDomainFilter, setResearchDomainFilter] = useState('')
   const navigate = useNavigate()
