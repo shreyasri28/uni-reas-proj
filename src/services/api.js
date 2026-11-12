@@ -1,263 +1,162 @@
 import axios from 'axios'
 
-// API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: 15000,
+  headers: { 'Content-Type': 'application/json' }
 })
 
-// Request Interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('authToken')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+apiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
 
-// Response Interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('authToken')
-      localStorage.removeItem('currentUser')
-      window.location.href = '/signin'
-    }
-    return Promise.reject(error)
-  }
+  response => response,
+  error => Promise.reject(error)
 )
 
-// Auth Service
+const messageFrom = (error, fallback) => error.response?.data?.message || fallback
+
 export const authService = {
   signin: async (email, password) => {
     try {
-      const response = await apiClient.post('/auth/signin', { email, password })
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token)
-        localStorage.setItem('currentUser', JSON.stringify(response.data.user))
+      const { data } = await apiClient.post('/auth/signin', { email, password })
+      if (data.token) {
+        localStorage.setItem('authToken', data.token)
+        localStorage.setItem('currentUser', JSON.stringify(data.user))
       }
-      return response.data
+      return data
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Sign in failed')
+      throw new Error(messageFrom(error, 'Sign in failed'))
     }
   },
-
-  signup: async (userData) => {
+  signup: async userData => {
     try {
-      const response = await apiClient.post('/auth/register', userData)
-      return response.data
+      const { data } = await apiClient.post('/auth/register', userData)
+      return data
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Sign up failed')
+      throw new Error(messageFrom(error, 'Registration failed'))
     }
   },
-
   verifyEmail: async (email, code) => {
     try {
-      const response = await apiClient.post('/auth/verify-email', { email, code })
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token)
-        localStorage.setItem('currentUser', JSON.stringify(response.data.user))
+      const { data } = await apiClient.post('/auth/verify-email', { email, code })
+      if (data.token) {
+        localStorage.setItem('authToken', data.token)
+        localStorage.setItem('currentUser', JSON.stringify(data.user))
       }
-      return response.data
+      return data
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Email verification failed')
+      throw new Error(messageFrom(error, 'Email verification failed'))
     }
   },
-
+  resendCode: async email => {
+    try {
+      const { data } = await apiClient.post('/auth/resend-code', { email })
+      return data
+    } catch (error) {
+      throw new Error(messageFrom(error, 'Could not resend the verification code'))
+    }
+  },
+  getMe: async () => {
+    try {
+      const { data } = await apiClient.get('/auth/me')
+      return data.user
+    } catch (error) {
+      throw new Error(messageFrom(error, 'Your session is invalid or has expired'))
+    }
+  },
   logout: () => {
     localStorage.removeItem('authToken')
     localStorage.removeItem('currentUser')
   }
 }
 
-// User Service
 export const userService = {
-  getProfile: async (userId) => {
-    try {
-      const response = await apiClient.get(`/users/${userId}`)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch profile')
-    }
+  getProfile: async userId => {
+    try { return (await apiClient.get(`/users/${userId}`)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch profile')) }
   },
-
   updateProfile: async (userId, data) => {
-    try {
-      const response = await apiClient.put(`/users/${userId}`, data)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update profile')
-    }
+    try { return (await apiClient.put(`/users/${userId}`, data)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to update profile')) }
   },
-
   searchUsers: async (query, filters = {}) => {
-    try {
-      const response = await apiClient.get('/users/search', {
-        params: { q: query, ...filters }
-      })
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Search failed')
-    }
+    try { return (await apiClient.get('/users/search', { params: { q: query, ...filters } })).data }
+    catch (error) { throw new Error(messageFrom(error, 'Search failed')) }
   },
-
-  getRecommendedMatches: async (userId) => {
-    try {
-      const response = await apiClient.get(`/users/${userId}/recommendations`)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch recommendations')
-    }
+  getRecommendedMatches: async userId => {
+    try { return (await apiClient.get(`/users/${userId}/recommendations`)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch recommendations')) }
   }
 }
 
-// Collaboration Service
 export const collaborationService = {
-  sendRequest: async (data) => {
-    try {
-      const response = await apiClient.post('/collaborations/requests', data)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to send request')
-    }
+  sendRequest: async data => {
+    try { return (await apiClient.post('/collaborations/requests', data)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to send request')) }
   },
-
   getRequests: async (status = 'all') => {
-    try {
-      const response = await apiClient.get('/collaborations/requests', {
-        params: { status }
-      })
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch requests')
-    }
+    try { return (await apiClient.get('/collaborations/requests', { params: { status } })).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch requests')) }
   },
-
   respondToRequest: async (requestId, status) => {
-    try {
-      const response = await apiClient.put(`/collaborations/requests/${requestId}`, { status })
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to respond to request')
-    }
+    try { return (await apiClient.put(`/collaborations/requests/${requestId}`, { status })).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to respond to request')) }
   },
-
   getCollaborations: async () => {
-    try {
-      const response = await apiClient.get('/collaborations')
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch collaborations')
-    }
+    try { return (await apiClient.get('/collaborations')).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch collaborations')) }
   }
 }
 
-// Project Service
 export const projectService = {
   getProjects: async () => {
-    try {
-      const response = await apiClient.get('/projects')
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch projects')
-    }
+    try { return (await apiClient.get('/projects')).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch projects')) }
   },
-
-  getProject: async (projectId) => {
-    try {
-      const response = await apiClient.get(`/projects/${projectId}`)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch project')
-    }
+  getProject: async projectId => {
+    try { return (await apiClient.get(`/projects/${projectId}`)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch project')) }
   },
-
-  createProject: async (data) => {
-    try {
-      const response = await apiClient.post('/projects', data)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to create project')
-    }
+  createProject: async data => {
+    try { return (await apiClient.post('/projects', data)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to create project')) }
   },
-
-  getMessages: async (projectId) => {
-    try {
-      const response = await apiClient.get(`/projects/${projectId}/messages`)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch messages')
-    }
+  getMessages: async projectId => {
+    try { return (await apiClient.get(`/projects/${projectId}/messages`)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch messages')) }
   },
-
   sendMessage: async (projectId, message) => {
-    try {
-      const response = await apiClient.post(`/projects/${projectId}/messages`, { message })
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to send message')
-    }
+    try { return (await apiClient.post(`/projects/${projectId}/messages`, { message })).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to send message')) }
   }
 }
 
-// Admin Service
 export const adminService = {
   getStats: async () => {
-    try {
-      const response = await apiClient.get('/admin/stats')
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch stats')
-    }
+    try { return (await apiClient.get('/admin/stats')).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch stats')) }
   },
-
   getUsers: async (page = 1, limit = 10) => {
-    try {
-      const response = await apiClient.get('/admin/users', {
-        params: { page, limit }
-      })
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch users')
-    }
+    try { return (await apiClient.get('/admin/users', { params: { page, limit } })).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch users')) }
   },
-
   updateUser: async (userId, data) => {
-    try {
-      const response = await apiClient.put(`/admin/users/${userId}`, data)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update user')
-    }
+    try { return (await apiClient.put(`/admin/users/${userId}`, data)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to update user')) }
   },
-
-  deleteUser: async (userId) => {
-    try {
-      const response = await apiClient.delete(`/admin/users/${userId}`)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to delete user')
-    }
+  deleteUser: async userId => {
+    try { return (await apiClient.delete(`/admin/users/${userId}`)).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to delete user')) }
   },
-
   getCollaborationRequests: async (status = 'all') => {
-    try {
-      const response = await apiClient.get('/admin/collaboration-requests', {
-        params: { status }
-      })
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch collaboration requests')
-    }
+    try { return (await apiClient.get('/admin/collaboration-requests', { params: { status } })).data }
+    catch (error) { throw new Error(messageFrom(error, 'Failed to fetch collaboration requests')) }
   }
 }
 
