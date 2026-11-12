@@ -5,18 +5,6 @@ import { AuthContext } from '../App'
 import EmailVerificationModal from '../components/EmailVerificationModal'
 import { authService } from '../services/api'
 
-function safeReadStoredUser() {
-  try {
-    const storedUser = localStorage.getItem('currentUser')
-    if (!storedUser) return null
-    const parsed = JSON.parse(storedUser)
-    return parsed && typeof parsed === 'object' ? parsed : null
-  } catch (error) {
-    localStorage.removeItem('currentUser')
-    return null
-  }
-}
-
 export default function Register() {
   const [step, setStep] = useState('details') // details, verification
   const [formData, setFormData] = useState({
@@ -84,7 +72,7 @@ export default function Register() {
   }
 
   if (step === 'verification') {
-    return <EmailVerificationModal email={formData.email} onVerify={handleVerifyEmail} />
+    return <EmailVerificationModal email={formData.email} onVerify={handleVerifyEmail} onResend={() => authService.resendCode(formData.email)} />
   }
 
   return (
