@@ -2,6 +2,7 @@ import { useState, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Mail, Lock, AlertCircle } from 'lucide-react'
 import { AuthContext } from '../App'
+import { authService } from '../services/api'
 
 function safeReadStoredUser() {
   try {
@@ -29,9 +30,6 @@ export default function SignIn() {
     setLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
       if (!email.includes('@')) {
         throw new Error('Please enter a valid email')
       }
@@ -39,44 +37,53 @@ export default function SignIn() {
         throw new Error('Password must be at least 6 characters')
       }
 
-      // Local demo authentication. Real authentication requires a configured backend.
-      const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-      const normalizedEmail = email.trim().toLowerCase()
-      const isAdminDemo = normalizedEmail === 'admin@university.edu' && password === 'admin123'
-      const isDemoAccount = normalizedEmail === 'demo@university.edu' && password === 'password123'
-      const registeredUser = users.find(user => user.email?.toLowerCase() === email.trim().toLowerCase())
+      try {
+        const response = await authService.signin(email, password)
+        localStorage.setItem('authToken', response.token)
+        localStorage.setItem('currentUser', JSON.stringify(response.user))
+        setCurrentUser(response.user)
+        setIsAuthenticated(true)
+        navigate('/dashboard')
+        return
+      } catch (backendError) {
+        const fallbackUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
+        const normalizedEmail = email.trim().toLowerCase()
+        const isAdminDemo = normalizedEmail === 'admin@university.edu' && password === 'admin123'
+        const isDemoAccount = normalizedEmail === 'demo@university.edu' && password === 'password123'
+        const registeredUser = fallbackUsers.find(user => user.email?.toLowerCase() === normalizedEmail)
 
-      if (!isDemoAccount && !isAdminDemo && !registeredUser) {
-        throw new Error('Account not found. Please create an account first.')
+        if (!isDemoAccount && !isAdminDemo && !registeredUser) {
+          throw new Error(backendError.message || 'Account not found. Please create an account first.')
+        }
+        if (!isDemoAccount && !isAdminDemo && registeredUser.password !== password) {
+          throw new Error('Incorrect email or password.')
+        }
+
+        const mockUser = isAdminDemo
+          ? {
+              id: 'demo-admin',
+              name: 'Portal Administrator',
+              email: 'admin@university.edu',
+              role: 'admin',
+              department: 'Administration',
+              profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PortalAdmin'
+            }
+          : isDemoAccount
+          ? {
+              id: 'demo-user',
+              name: 'Demo User',
+              email: 'demo@university.edu',
+              role: 'student',
+              department: 'Computer Science',
+              profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DemoUser'
+            }
+          : (({ password: _password, ...publicUser }) => publicUser)(registeredUser)
+
+        localStorage.setItem('currentUser', JSON.stringify(mockUser))
+        setCurrentUser(mockUser)
+        setIsAuthenticated(true)
+        navigate('/dashboard')
       }
-      if (!isDemoAccount && !isAdminDemo && registeredUser.password !== password) {
-        throw new Error('Incorrect email or password.')
-      }
-
-      const mockUser = isAdminDemo
-        ? {
-            id: 'demo-admin',
-            name: 'Portal Administrator',
-            email: 'admin@university.edu',
-            role: 'admin',
-            department: 'Administration',
-            profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PortalAdmin'
-          }
-        : isDemoAccount
-        ? {
-            id: 'demo-user',
-            name: 'Demo User',
-            email: 'demo@university.edu',
-            role: 'student',
-            department: 'Computer Science',
-            profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DemoUser'
-          }
-        : (({ password: _password, ...publicUser }) => publicUser)(registeredUser)
-
-      localStorage.setItem('currentUser', JSON.stringify(mockUser))
-      setCurrentUser(mockUser)
-      setIsAuthenticated(true)
-      navigate('/dashboard')
     } catch (err) {
       setError(err.message || 'Sign in failed. Please try again.')
     } finally {

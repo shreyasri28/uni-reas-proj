@@ -20,9 +20,7 @@ apiClient.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 // Response Interceptor
@@ -55,7 +53,7 @@ export const authService = {
 
   signup: async (userData) => {
     try {
-      const response = await apiClient.post('/auth/signup', userData)
+      const response = await apiClient.post('/auth/register', userData)
       return response.data
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Sign up failed')
@@ -67,6 +65,7 @@ export const authService = {
       const response = await apiClient.post('/auth/verify-email', { email, code })
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token)
+        localStorage.setItem('currentUser', JSON.stringify(response.data.user))
       }
       return response.data
     } catch (error) {
@@ -258,17 +257,6 @@ export const adminService = {
       return response.data
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch collaboration requests')
-    }
-  },
-
-  getAnalytics: async (period = 'month') => {
-    try {
-      const response = await apiClient.get('/admin/analytics', {
-        params: { period }
-      })
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch analytics')
     }
   }
 }

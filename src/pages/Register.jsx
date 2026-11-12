@@ -1,8 +1,9 @@
 import { useState, useContext } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
+import { User, Mail, Lock, AlertCircle } from 'lucide-react'
 import { AuthContext } from '../App'
 import EmailVerificationModal from '../components/EmailVerificationModal'
+import { authService } from '../services/api'
 
 function safeReadStoredUser() {
   try {
@@ -48,12 +49,18 @@ export default function Register() {
       // Validation
       if (!formData.name.trim()) throw new Error('Name is required')
       if (!formData.email.includes('@')) throw new Error('Valid email is required')
-      if (formData.password.length < 6) throw new Error('Password must be at least 6 characters')
+      if (formData.password.length < 8) throw new Error('Password must be at least 8 characters')
       if (formData.password !== formData.confirmPassword) throw new Error('Passwords do not match')
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      // Call the real backend API
+      await authService.signup({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        department: formData.department
+      })
+
       setStep('verification')
     } catch (err) {
       setError(err.message)
@@ -64,30 +71,11 @@ export default function Register() {
 
   const handleVerifyEmail = async (code) => {
     try {
-      // Demo-only verification. Replace this with authService.verifyEmail when a backend exists.
-      if (code !== '123456') {
-        throw new Error('Invalid verification code. For local demo, enter 123456.')
-      }
-      await new Promise(resolve => setTimeout(resolve, 300))
-
-      const mockUser = {
-        id: Date.now().toString(),
-        name: formData.name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        role: formData.role,
-        department: formData.department.trim(),
-        profileComplete: false,
-        profilePicture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formData.name.trim())}`
-      }
-
-      const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-      if (users.some(user => user.email === mockUser.email)) {
-        throw new Error('An account with this email already exists. Please sign in.')
-      }
-      users.push({ ...mockUser, password: formData.password })
-      localStorage.setItem('registeredUsers', JSON.stringify(users))
-      localStorage.setItem('currentUser', JSON.stringify(mockUser))
-      setCurrentUser(mockUser)
+      const response = await authService.verifyEmail(formData.email, code)
+      const user = response.user
+      localStorage.setItem('authToken', response.token)
+      localStorage.setItem('currentUser', JSON.stringify(user))
+      setCurrentUser(user)
       setIsAuthenticated(true)
       navigate('/dashboard')
     } catch (err) {
