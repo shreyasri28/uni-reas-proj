@@ -8,8 +8,8 @@ import rateLimit from 'express-rate-limit'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { randomInt, randomUUID, createHash, timingSafeEqual } from 'node:crypto'
-import { pool, checkDatabase } from './db.js'
-import { sendVerificationEmail, verifyEmailTransport } from './mailer.js'
+const { pool, checkDatabase } = await import('./db.js')
+const { sendVerificationEmail, verifyEmailTransport } = await import('./mailer.js')
 
 const app = express()
 const PORT = Number(process.env.PORT || 3000)
