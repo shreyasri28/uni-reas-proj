@@ -86,7 +86,24 @@ cp .env.example .env.local
 Edit `.env.local` to configure API endpoints (Vite requires the `VITE_` prefix):
 ```
 VITE_API_URL=http://localhost:3000/api
-VITE_USE_MOCK_DATA=true
+VITE_USE_MOCK_DATA=false
+
+# Backend settings are also placed in this same project-root .env.local:
+PORT=3000
+CLIENT_ORIGIN=http://localhost:5173
+JWT_SECRET=replace-with-a-random-secret-at-least-32-characters-long
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=uni_reas_user
+DB_PASSWORD=your-mysql-password
+DB_NAME=uni_reas
+SMTP_HOST=smtp-relay.brevo.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-brevo-smtp-login
+SMTP_PASS=your-brevo-smtp-key
+MAIL_FROM=Uni-Reas <verified-sender@your-domain.com>
+ALLOWED_EMAIL_DOMAIN=
 ```
 
 ## 🚀 Running the Application
@@ -141,32 +158,28 @@ package.json          # Dependencies and scripts
 
 ## 🔐 Authentication Flow
 
-### Mock Authentication
-For development, the app uses mock authentication:
-- **Demo Email**: demo@university.edu
-- **Demo Password**: password123
-- **Registration demo OTP**: 123456 (no email is sent)
+The application uses the MySQL-backed API for authentication. There are no demo accounts or fixed verification codes.
 
-Demo users are stored in browser `localStorage` (`currentUser` and `registeredUsers`). This is for local demonstration only; it is not secure production authentication.
+1. Registration validates the submitted details and sends a randomly generated six-digit code to the exact email address entered.
+2. The code is stored only as a SHA-256 hash and expires after 10 minutes.
+3. A user account is created only after the correct code is submitted.
+4. Codes are limited to five incorrect attempts; resend is rate-limited to once per 60 seconds.
+5. Sign-in rejects unverified accounts and returns a JWT only for verified users.
 
-### Production Integration
-To integrate with a backend API:
+### Brevo SMTP configuration
 
-1. Update API endpoints in `src/services/api.js`
-2. The `authService` module handles authentication requests:
-```javascript
-// Sign in
-await authService.signin(email, password)
+Create a Brevo SMTP key and use the SMTP login/key (not the Brevo website password). Verify the sender address in Brevo and set it as `MAIL_FROM`. Keep all credentials in the ignored project-root `.env.local`; never commit that file. Copy `.env.example` and replace every placeholder before starting the server.
 
-// Sign up
-await authService.signup(userData)
+### Run the application
 
-// Email verification
-await authService.verifyEmail(email, code)
+Open two terminals from the repository root:
 
-// Logout
-authService.logout()
+```bash
+npm run server:dev
+npm run dev
 ```
+
+Check the API at `http://localhost:3000/api/health`. It should report both the API and MySQL connection as healthy.
 
 ## 🔗 API Integration
 
