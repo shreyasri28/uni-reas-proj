@@ -2,7 +2,7 @@ import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Users, Briefcase, Clock, Bell, Edit, GraduationCap, BookOpen,
-  FilePlus2, UserRoundSearch, ClipboardCheck, FolderKanban, ArrowUpRight,
+  FilePlus2, Search, ClipboardCheck, FolderKanban, ArrowUpRight,
   Microscope, Lightbulb, CalendarDays
 } from 'lucide-react'
 import { AuthContext } from '../App'
@@ -57,7 +57,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   <FacultyAction icon={FolderKanban} title="Manage research projects" description="Create projects, review your ongoing work, and coordinate research teams." action="Open projects" onClick={() => navigate('/projects')} />
                   <FacultyAction icon={ClipboardCheck} title="Review collaboration requests" description="Respond to student and researcher requests to work with you." action="Review requests" onClick={() => navigate('/requests')} />
-                  <FacultyAction icon={UserRoundSearch} title="Discover student researchers" description="Find students by department, skills, and research interests." action="Explore directory" onClick={() => navigate('/directory')} />
+                  <FacultyAction icon={Search} title="Discover student researchers" description="Find students by department, skills, and research interests." action="Explore directory" onClick={() => navigate('/directory')} />
                   <FacultyAction icon={BookOpen} title="Researcher profile" description="Keep your expertise, research interests, and academic profile up to date." action="Edit profile" onClick={() => navigate('/settings')} />
                 </div>
               </section>
