@@ -38,14 +38,19 @@ function App() {
   useEffect(() => {
     // Simulate checking auth state from localStorage
     const storedUser = safeReadStoredUser()
-    if (storedUser) {
+    const token = localStorage.getItem('authToken')
+    if (storedUser && token && storedUser.verified === true) {
       setCurrentUser(storedUser)
       setIsAuthenticated(true)
+    } else {
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('currentUser')
     }
     setIsLoading(false)
   }, [])
 
   const handleSignOut = () => {
+    localStorage.removeItem('authToken')
     localStorage.removeItem('currentUser')
     setCurrentUser(null)
     setIsAuthenticated(false)
