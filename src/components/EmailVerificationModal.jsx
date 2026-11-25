@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Mail, AlertCircle, CheckCircle } from 'lucide-react'
+import { authService } from '../services/api'
 
 export default function EmailVerificationModal({ email, onVerify }) {
   const [code, setCode] = useState(['', '', '', '', '', ''])
-  const [timer, setTimer] = useState(45)
+  const [timer, setTimer] = useState(60)
+  const [resending, setResending] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -32,6 +34,20 @@ export default function EmailVerificationModal({ email, onVerify }) {
   const handleBackspace = (index, e) => {
     if (e.key === 'Backspace' && !code[index] && index > 0) {
       document.getElementById(`code-${index - 1}`)?.focus()
+    }
+  }
+
+  const handleResend = async () => {
+    setError('')
+    setResending(true)
+    try {
+      await authService.resendCode(email)
+      setCode(['', '', '', '', '', ''])
+      setTimer(60)
+    } catch (err) {
+      setError(err.message || 'Could not resend verification code')
+    } finally {
+      setResending(false)
     }
   }
 
@@ -138,10 +154,11 @@ export default function EmailVerificationModal({ email, onVerify }) {
               ) : (
                 <button
                   type="button"
-                  onClick={() => setTimer(45)}
+                  onClick={handleResend}
+                  disabled={resending}
                   className="text-primary-600 hover:text-primary-700 font-semibold text-sm"
                 >
-                  Resend Code
+                  {resending ? 'Sending...' : 'Resend Code'}
                 </button>
               )}
             </div>
