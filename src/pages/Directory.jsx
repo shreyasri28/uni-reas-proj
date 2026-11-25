@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Filter, MapPin, Briefcase } from 'lucide-react'
+import { Search, MapPin } from 'lucide-react'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import { useNavigate, useSearchParams } from 'react-router-dom'

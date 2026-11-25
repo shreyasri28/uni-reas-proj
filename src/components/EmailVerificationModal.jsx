@@ -133,7 +133,7 @@ export default function EmailVerificationModal({ email, onVerify }) {
             <div className="text-center">
               {timer > 0 ? (
                 <p className="text-gray-600 text-sm">
-                  Didn't get it? Resend in <span className="font-semibold text-primary-600">0:{timer.toString().padStart(2, '0')}</span>
+                  Didn&apos;t get it? Resend in <span className="font-semibold text-primary-600">0:{timer.toString().padStart(2, '0')}</span>
                 </p>
               ) : (
                 <button

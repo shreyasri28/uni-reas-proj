@@ -24,7 +24,7 @@ function safeReadStoredUser() {
     if (!storedUser) return null
     const parsed = JSON.parse(storedUser)
     return parsed && typeof parsed === 'object' ? parsed : null
-  } catch (error) {
+  } catch {
     localStorage.removeItem('currentUser')
     return null
   }

@@ -4,18 +4,6 @@ import { Mail, Lock, AlertCircle } from 'lucide-react'
 import { AuthContext } from '../App'
 import { authService } from '../services/api'
 
-function safeReadStoredUser() {
-  try {
-    const storedUser = localStorage.getItem('currentUser')
-    if (!storedUser) return null
-    const parsed = JSON.parse(storedUser)
-    return parsed && typeof parsed === 'object' ? parsed : null
-  } catch (error) {
-    localStorage.removeItem('currentUser')
-    return null
-  }
-}
-
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -62,7 +50,7 @@ export default function SignIn() {
         const mockUser = isAdminDemo
           ? {
               id: 'demo-admin',
-              name: 'Portal Administrator',
+              name: 'Research Admin',
               email: 'admin@university.edu',
               role: 'admin',
               department: 'Administration',
@@ -71,11 +59,11 @@ export default function SignIn() {
           : isDemoAccount
           ? {
               id: 'demo-user',
-              name: 'Demo User',
+              name: 'Shreya Sri',
               email: 'demo@university.edu',
               role: 'student',
               department: 'Computer Science',
-              profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DemoUser'
+              profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ShreyaSri'
             }
           : (({ password: _password, ...publicUser }) => publicUser)(registeredUser)
 

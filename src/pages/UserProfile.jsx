@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Mail, MapPin, Briefcase, Heart } from 'lucide-react'
+import { ArrowLeft, Mail, Briefcase, Heart } from 'lucide-react'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import CollaborationRequestModal from '../components/CollaborationRequestModal'

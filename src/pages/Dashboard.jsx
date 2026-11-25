@@ -1,11 +1,10 @@
 import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Users, Briefcase, Clock, Bell, Settings, LogOut, Menu, X, Edit } from 'lucide-react'
+import { Users, Briefcase, Clock, Bell, Edit } from 'lucide-react'
 import { AuthContext } from '../App'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import StatCard from '../components/StatCard'
-import ActivityFeed from '../components/ActivityFeed'
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -77,7 +76,7 @@ export default function Dashboard() {
                 Welcome back, {currentUser?.name}! 👋
               </h1>
               <p className="text-gray-600 mt-1">
-                Here's what's happening with your research collaborations
+                Here&apos;s what&apos;s happening with your research collaborations
               </p>
             </div>
 
