@@ -110,7 +110,6 @@ export default function EmailVerificationModal({ email, onVerify }) {
             <p className="text-gray-600">
               Enter the 6-digit verification code for<br />
               <span className="font-semibold">{email}</span>
-              <span className="block mt-2 text-xs text-blue-700">Local demo code: 123456 (no email is sent)</span>
             </p>
           </div>
 
