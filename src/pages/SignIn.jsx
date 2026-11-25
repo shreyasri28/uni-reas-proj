@@ -25,53 +25,12 @@ export default function SignIn() {
         throw new Error('Password must be at least 6 characters')
       }
 
-      try {
-        const response = await authService.signin(email, password)
-        localStorage.setItem('authToken', response.token)
-        localStorage.setItem('currentUser', JSON.stringify(response.user))
-        setCurrentUser(response.user)
-        setIsAuthenticated(true)
-        navigate('/dashboard')
-        return
-      } catch (backendError) {
-        const fallbackUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]')
-        const normalizedEmail = email.trim().toLowerCase()
-        const isAdminDemo = normalizedEmail === 'admin@university.edu' && password === 'admin123'
-        const isDemoAccount = normalizedEmail === 'demo@university.edu' && password === 'password123'
-        const registeredUser = fallbackUsers.find(user => user.email?.toLowerCase() === normalizedEmail)
-
-        if (!isDemoAccount && !isAdminDemo && !registeredUser) {
-          throw new Error(backendError.message || 'Account not found. Please create an account first.')
-        }
-        if (!isDemoAccount && !isAdminDemo && registeredUser.password !== password) {
-          throw new Error('Incorrect email or password.')
-        }
-
-        const mockUser = isAdminDemo
-          ? {
-              id: 'demo-admin',
-              name: 'Research Admin',
-              email: 'admin@university.edu',
-              role: 'admin',
-              department: 'Administration',
-              profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PortalAdmin'
-            }
-          : isDemoAccount
-          ? {
-              id: 'demo-user',
-              name: 'Shreya Sri',
-              email: 'demo@university.edu',
-              role: 'student',
-              department: 'Computer Science',
-              profilePicture: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ShreyaSri'
-            }
-          : (({ password: _password, ...publicUser }) => publicUser)(registeredUser)
-
-        localStorage.setItem('currentUser', JSON.stringify(mockUser))
-        setCurrentUser(mockUser)
-        setIsAuthenticated(true)
-        navigate('/dashboard')
-      }
+      const response = await authService.signin(email, password)
+      localStorage.setItem('authToken', response.token)
+      localStorage.setItem('currentUser', JSON.stringify(response.user))
+      setCurrentUser(response.user)
+      setIsAuthenticated(true)
+      navigate('/dashboard')
     } catch (err) {
       setError(err.message || 'Sign in failed. Please try again.')
     } finally {
@@ -175,11 +134,6 @@ export default function SignIn() {
             Create Account
           </Link>
 
-          {/* Info */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs text-blue-700 font-semibold mb-2">💡 Tip:</p>
-            <p className="text-xs text-blue-600">Student demo: demo@university.edu / password123. Admin demo: admin@university.edu / admin123.</p>
-          </div>
         </div>
       </div>
     </div>
