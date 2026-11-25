@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Users, Briefcase, Clock, Settings, LogOut, Bell, Shield, GraduationCap, UserRoundSearch, ClipboardCheck } from 'lucide-react'
+import { LayoutDashboard, Users, Briefcase, Clock, Settings, LogOut, Bell, Shield, GraduationCap, Search, ClipboardCheck } from 'lucide-react'
 import { AuthContext } from '../App'
 
 const studentMenuItems = [
@@ -13,7 +13,7 @@ const studentMenuItems = [
 
 const facultyMenuItems = [
   { icon: LayoutDashboard, label: 'Faculty Dashboard', href: '/dashboard' },
-  { icon: UserRoundSearch, label: 'Find Student Researchers', href: '/directory' },
+  { icon: Search, label: 'Find Student Researchers', href: '/directory' },
   { icon: Briefcase, label: 'Manage Research Projects', href: '/projects' },
   { icon: ClipboardCheck, label: 'Review Requests', href: '/requests' },
   { icon: Bell, label: 'Research Notifications', href: '/notifications' }
