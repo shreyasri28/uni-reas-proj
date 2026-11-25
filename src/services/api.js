@@ -60,6 +60,15 @@ export const authService = {
     }
   },
 
+  resendCode: async (email) => {
+    try {
+      const response = await apiClient.post('/auth/resend-code', { email })
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Could not resend verification code')
+    }
+  },
+
   verifyEmail: async (email, code) => {
     try {
       const response = await apiClient.post('/auth/verify-email', { email, code })
